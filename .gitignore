@@ -1,0 +1,93 @@
+# ==============================================================================
+# NER-GRID: .gitignore
+# ==============================================================================
+
+# --- Secrets & Environment Variables ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+credentials.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Virtual Environments ---
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# --- Node / Frontend ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# --- Testing & Code Quality ---
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Large Geospatial Rasters & Bulk Binary Data ---
+# Preserve directory structure with .gitkeep but ignore large downloads
+data/raw/*
+!data/raw/.gitkeep
+data/cached/*
+!data/cached/.gitkeep
+*.tif
+*.tiff
+*.geotiff
+*.nc
+*.osm.pbf
+*.tar.gz
+*.zip
+*.gdb/
+
+# --- Databases & Logs ---
+*.sqlite
+*.sqlite3
+*.db
+*.log
+*.log.*
+
+# --- Operating System & IDE ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
