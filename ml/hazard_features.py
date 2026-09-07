@@ -10,7 +10,6 @@ import os
 import json
 import logging
 from typing import Dict, List, Tuple, Any, Optional
-from shapely.geometry import Point, LineString
 
 logger = logging.getLogger(__name__)
 
