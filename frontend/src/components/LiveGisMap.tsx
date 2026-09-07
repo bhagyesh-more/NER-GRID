@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { RouteDisruptionAnalysis, LocationItem, IncidentReport } from '../types';
 import { Layers } from 'lucide-react';
@@ -31,12 +31,13 @@ export const LiveGisMap: React.FC<LiveGisMapProps> = ({
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
   const prevRouteIds = useRef<string[]>([]);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   // 1. Initialize Map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    map.current = new maplibregl.Map({
+    const m = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
@@ -64,24 +65,26 @@ export const LiveGisMap: React.FC<LiveGisMapProps> = ({
       zoom: 8.5,
     });
 
-    map.current.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+    map.current = m;
+    m.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+
+    m.on('load', () => {
+      setIsMapReady(true);
+    });
 
     return () => {
-      map.current?.remove();
+      m.remove();
       map.current = null;
+      setIsMapReady(false);
     };
   }, []);
 
   // 2. Render Routes & GeoJSON Layers & Markers
   useEffect(() => {
-    if (!map.current) return;
+    if (!isMapReady || !map.current) return;
 
     const m = map.current;
-    if (!m.isStyleLoaded()) {
-      m.once('load', () => renderAll());
-    } else {
-      renderAll();
-    }
+    renderAll();
 
     function renderAll() {
       if (!m) return;
@@ -264,7 +267,7 @@ export const LiveGisMap: React.FC<LiveGisMapProps> = ({
         }
       }
     }
-  }, [routes, selectedRouteId, origin, destination, incidents, onSelectRoute]);
+  }, [isMapReady, routes, selectedRouteId, origin, destination, incidents, onSelectRoute]);
 
   return (
     <div className="relative flex-1 h-full w-full bg-[#0B0F19] overflow-hidden">
