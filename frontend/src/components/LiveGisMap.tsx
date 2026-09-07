@@ -30,6 +30,7 @@ export const LiveGisMap: React.FC<LiveGisMapProps> = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
+  const prevRouteIds = useRef<string[]>([]);
 
   // 1. Initialize Map
   useEffect(() => {
@@ -71,121 +72,43 @@ export const LiveGisMap: React.FC<LiveGisMapProps> = ({
     };
   }, []);
 
-  // 2. Render Routes & GeoJSON Layers
+  // 2. Render Routes & GeoJSON Layers & Markers
   useEffect(() => {
     if (!map.current) return;
 
     const m = map.current;
     if (!m.isStyleLoaded()) {
-      m.once('load', () => renderLayers());
+      m.once('load', () => renderAll());
     } else {
-      renderLayers();
+      renderAll();
     }
 
-    function renderLayers() {
+    function renderAll() {
       if (!m) return;
 
-      // Remove existing route layers
-      routes.forEach((r) => {
-        const sourceId = `route-source-${r.route_id}`;
-        const layerId = `route-layer-${r.route_id}`;
-        const casingId = `route-casing-${r.route_id}`;
-
-        if (m.getLayer(layerId)) m.removeLayer(layerId);
-        if (m.getLayer(casingId)) m.removeLayer(casingId);
-        if (m.getSource(sourceId)) m.removeSource(sourceId);
-      });
-
-      // Clear existing markers
+      // --- A. Render Markers (Origin, Destination, Incidents) ---
+      // Clear previous markers
       markers.current.forEach((mk) => mk.remove());
       markers.current = [];
 
-      if (!routes || routes.length === 0) return;
-
-      const bounds = new maplibregl.LngLatBounds();
-
-      routes.forEach((r) => {
-        const sourceId = `route-source-${r.route_id}`;
-        const layerId = `route-layer-${r.route_id}`;
-        const casingId = `route-casing-${r.route_id}`;
-        const isSelected = r.route_id === selectedRouteId;
-        const color = RISK_COLORS[r.predicted_risk_level] || '#3B82F6';
-
-        // Register Source
-        m.addSource(sourceId, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: { id: r.route_id, name: r.route_name },
-            geometry: r.geometry as any,
-          },
-        });
-
-        // Dark Outline Casing
-        m.addLayer({
-          id: casingId,
-          type: 'line',
-          source: sourceId,
-          layout: {
-            'line-cap': 'round',
-            'line-join': 'round',
-          },
-          paint: {
-            'line-color': '#0B0F19',
-            'line-width': isSelected ? 8 : 6,
-            'line-opacity': 0.8,
-          },
-        });
-
-        // Main colored route line
-        m.addLayer({
-          id: layerId,
-          type: 'line',
-          source: sourceId,
-          layout: {
-            'line-cap': 'round',
-            'line-join': 'round',
-          },
-          paint: {
-            'line-color': color,
-            'line-width': isSelected ? 5 : 3.5,
-            'line-opacity': isSelected ? 1.0 : 0.65,
-            'line-dasharray': r.route_id.includes('alternative') ? [2, 1.5] : [1, 0],
-          },
-        });
-
-        // Click handler for route
-        m.on('click', layerId, () => {
-          onSelectRoute(r.route_id);
-        });
-
-        // Extend bounds
-        r.geometry.coordinates.forEach((coord) => {
-          bounds.extend(coord as [number, number]);
-        });
-      });
-
-      // Fit map bounds to show route
-      if (!bounds.isEmpty()) {
-        m.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 1000 });
-      }
-
-      // Add Origin Marker (Green)
-      if (origin) {
+      // Add Origin Marker (Green Pin)
+      if (origin && typeof origin.latitude === 'number' && typeof origin.longitude === 'number') {
         const elOrig = document.createElement('div');
-        elOrig.className = 'w-5 h-5 rounded-full bg-emerald-500 border-2 border-white shadow-lg flex items-center justify-center font-bold text-[9px] text-white';
-        elOrig.title = `Origin: ${origin.name}`;
+        elOrig.className = 'w-6 h-6 rounded-full bg-emerald-500 border-2 border-white shadow-xl flex items-center justify-center font-bold text-[10px] text-white ring-2 ring-emerald-400/50 cursor-pointer transition-transform hover:scale-110';
+        elOrig.innerHTML = 'A';
+        elOrig.title = `Origin: ${origin.name} (${origin.state})`;
         const markerOrig = new maplibregl.Marker({ element: elOrig })
           .setLngLat([origin.longitude, origin.latitude])
           .addTo(m);
         markers.current.push(markerOrig);
       }
 
-      // Add Destination Marker (Red)
-      if (destination) {
+      // Add Destination Marker (Red Pin)
+      if (destination && typeof destination.latitude === 'number' && typeof destination.longitude === 'number') {
         const elDest = document.createElement('div');
-        elDest.className = 'w-5 h-5 rounded-full bg-rose-600 border-2 border-white shadow-lg flex items-center justify-center font-bold text-[9px] text-white';
-        elDest.title = `Destination: ${destination.name}`;
+        elDest.className = 'w-6 h-6 rounded-full bg-rose-600 border-2 border-white shadow-xl flex items-center justify-center font-bold text-[10px] text-white ring-2 ring-rose-400/50 cursor-pointer transition-transform hover:scale-110';
+        elDest.innerHTML = 'B';
+        elDest.title = `Destination: ${destination.name} (${destination.state})`;
         const markerDest = new maplibregl.Marker({ element: elDest })
           .setLngLat([destination.longitude, destination.latitude])
           .addTo(m);
@@ -204,6 +127,142 @@ export const LiveGisMap: React.FC<LiveGisMapProps> = ({
           markers.current.push(mInc);
         }
       });
+
+      // --- B. Remove layers & sources that are no longer in the active routes ---
+      const activeRouteList = routes || [];
+      const currentRouteIds = new Set(activeRouteList.map((r) => r.route_id));
+
+      prevRouteIds.current.forEach((oldId) => {
+        if (!currentRouteIds.has(oldId)) {
+          const layerId = `route-layer-${oldId}`;
+          const casingId = `route-casing-${oldId}`;
+          const sourceId = `route-source-${oldId}`;
+          try {
+            if (m.getLayer(layerId)) m.removeLayer(layerId);
+            if (m.getLayer(casingId)) m.removeLayer(casingId);
+            if (m.getSource(sourceId)) m.removeSource(sourceId);
+          } catch (e) {
+            console.warn(`Error removing layer/source for ${oldId}:`, e);
+          }
+        }
+      });
+
+      // --- C. Add or Update GeoJSON Sources and Layers ---
+      activeRouteList.forEach((r) => {
+        const sourceId = `route-source-${r.route_id}`;
+        const layerId = `route-layer-${r.route_id}`;
+        const casingId = `route-casing-${r.route_id}`;
+        const isSelected = r.route_id === selectedRouteId;
+        const color = RISK_COLORS[r.predicted_risk_level] || '#3B82F6';
+
+        const featureData: any = {
+          type: 'Feature',
+          properties: { id: r.route_id, name: r.route_name },
+          geometry: r.geometry,
+        };
+
+        const existingSource = m.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
+        if (existingSource) {
+          // Source exists: safely update data without destroying layers
+          existingSource.setData(featureData);
+          if (m.getLayer(layerId)) {
+            m.setPaintProperty(layerId, 'line-color', color);
+            m.setPaintProperty(layerId, 'line-width', isSelected ? 5.5 : 3.5);
+            m.setPaintProperty(layerId, 'line-opacity', isSelected ? 1.0 : 0.65);
+          }
+          if (m.getLayer(casingId)) {
+            m.setPaintProperty(casingId, 'line-width', isSelected ? 8.5 : 6);
+          }
+        } else {
+          // Create new source
+          m.addSource(sourceId, {
+            type: 'geojson',
+            data: featureData,
+          });
+
+          // Dark Outline Casing
+          m.addLayer({
+            id: casingId,
+            type: 'line',
+            source: sourceId,
+            layout: {
+              'line-cap': 'round',
+              'line-join': 'round',
+            },
+            paint: {
+              'line-color': '#0B0F19',
+              'line-width': isSelected ? 8.5 : 6,
+              'line-opacity': 0.8,
+            },
+          });
+
+          // Main colored route line
+          m.addLayer({
+            id: layerId,
+            type: 'line',
+            source: sourceId,
+            layout: {
+              'line-cap': 'round',
+              'line-join': 'round',
+            },
+            paint: {
+              'line-color': color,
+              'line-width': isSelected ? 5.5 : 3.5,
+              'line-opacity': isSelected ? 1.0 : 0.65,
+              'line-dasharray': r.route_id.includes('alternative') ? [2, 1.5] : [1, 0],
+            },
+          });
+
+          // Click handler for route selection
+          m.on('click', layerId, () => {
+            onSelectRoute(r.route_id);
+          });
+          m.on('mouseenter', layerId, () => {
+            m.getCanvas().style.cursor = 'pointer';
+          });
+          m.on('mouseleave', layerId, () => {
+            m.getCanvas().style.cursor = '';
+          });
+        }
+      });
+
+      prevRouteIds.current = activeRouteList.map((r) => r.route_id);
+
+      // --- D. Camera Fit Bounds (Include Origin, Destination, & Route Polylines) ---
+      const bounds = new maplibregl.LngLatBounds();
+      let hasCoords = false;
+
+      if (origin && typeof origin.latitude === 'number' && typeof origin.longitude === 'number') {
+        bounds.extend([origin.longitude, origin.latitude]);
+        hasCoords = true;
+      }
+      if (destination && typeof destination.latitude === 'number' && typeof destination.longitude === 'number') {
+        bounds.extend([destination.longitude, destination.latitude]);
+        hasCoords = true;
+      }
+
+      activeRouteList.forEach((r) => {
+        if (r.geometry && Array.isArray(r.geometry.coordinates)) {
+          r.geometry.coordinates.forEach((coord: any) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              bounds.extend([coord[0], coord[1]]);
+              hasCoords = true;
+            }
+          });
+        }
+      });
+
+      if (hasCoords && !bounds.isEmpty()) {
+        try {
+          m.fitBounds(bounds, {
+            padding: { top: 70, bottom: 70, left: 70, right: 70 },
+            maxZoom: 12,
+            duration: 900,
+          });
+        } catch (err) {
+          console.warn('fitBounds error:', err);
+        }
+      }
     }
   }, [routes, selectedRouteId, origin, destination, incidents, onSelectRoute]);
 

@@ -80,6 +80,11 @@ export const App: React.FC = () => {
 
       if (!orig || !dest) return;
 
+      if (orig.name === dest.name || (orig.latitude === dest.latitude && orig.longitude === dest.longitude)) {
+        setErrorMsg('Origin and Destination cannot be identical. Please select distinct endpoints.');
+        return;
+      }
+
       setIsLoading(true);
       setErrorMsg(null);
 
