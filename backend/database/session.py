@@ -6,6 +6,9 @@ from backend.config import settings
 
 # Handle sqlite relative paths and create directories if needed
 db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 if db_url.startswith("sqlite"):
     db_path = db_url.replace("sqlite:///", "")
     db_dir = os.path.dirname(db_path)
