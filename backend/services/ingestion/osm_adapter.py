@@ -29,6 +29,10 @@ VERIFIED_NER_SEEDS = [
     {"name": "Dimapur", "state": "Nagaland", "district": "Dimapur", "lat": 25.9093, "lon": 93.7266, "elevation_m": 145.0, "type": "logistics_railhead"},
     {"name": "Tezpur", "state": "Assam", "district": "Sonitpur", "lat": 26.6528, "lon": 92.7926, "elevation_m": 48.0, "type": "bridge_chokepoint"},
     {"name": "Rangpo", "state": "Sikkim", "district": "Pakyong", "lat": 27.1764, "lon": 88.5283, "elevation_m": 330.0, "type": "border_checkpoint"},
+    {"name": "STNM Hospital (Gangtok)", "state": "Sikkim", "district": "East Sikkim", "lat": 27.3235, "lon": 88.6015, "elevation_m": 1610.0, "type": "critical_hospital"},
+    {"name": "GMCH Trauma Hospital (Guwahati)", "state": "Assam", "district": "Kamrup Metropolitan", "lat": 26.1558, "lon": 91.7766, "elevation_m": 65.0, "type": "critical_hospital"},
+    {"name": "NBMCH Hospital (Siliguri)", "state": "West Bengal", "district": "Darjeeling", "lat": 26.7022, "lon": 88.3752, "elevation_m": 130.0, "type": "critical_hospital"},
+    {"name": "NEIGRIHMS Hospital (Shillong)", "state": "Meghalaya", "district": "East Khasi Hills", "lat": 25.5991, "lon": 91.9392, "elevation_m": 1480.0, "type": "critical_hospital"},
 ]
 
 

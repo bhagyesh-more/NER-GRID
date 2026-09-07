@@ -48,6 +48,10 @@ export interface RouteDisruptionAnalysis {
   predicted_risk_level: RiskLevel;
   disruption_probability: number;
   confidence: number;
+  mission_score?: number;
+  is_fastest?: boolean;
+  is_lowest_risk?: boolean;
+  is_recommended?: boolean;
   contributing_factors: ContributingFactor[];
   mission_suitability: MissionSuitability;
   expected_impact: string;

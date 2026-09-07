@@ -67,6 +67,10 @@ class RouteDisruptionAnalysis(BaseModel):
     predicted_risk_level: RiskLevel
     disruption_probability: float = Field(..., ge=0.0, le=100.0)
     confidence: float = Field(..., ge=0.0, le=100.0)
+    mission_score: float = Field(default=80.0, ge=0.0, le=100.0, description="Overall mission-weighted suitability index")
+    is_fastest: bool = Field(default=False)
+    is_lowest_risk: bool = Field(default=False)
+    is_recommended: bool = Field(default=False)
     contributing_factors: List[ContributingFactor] = []
     mission_suitability: MissionSuitability
     expected_impact: str

@@ -168,6 +168,25 @@ export const App: React.FC = () => {
     runAnalysis(origin || undefined, destination || undefined, missionType, selectedScenario);
   };
 
+  // Handle Preload Demo Mode (Siliguri -> STNM Hospital Gangtok, Medical Emergency)
+  const handlePreloadDemo = () => {
+    const siliguri = locations.find((l) => l.name === 'Siliguri') || locations[0];
+    const stnm = locations.find((l) => l.name.includes('STNM Hospital')) || locations.find((l) => l.name === 'Gangtok') || locations[1];
+    if (siliguri && stnm) {
+      setOrigin(siliguri);
+      setDestination(stnm);
+      setMissionType('medical_emergency');
+      setSelectedScenario('baseline');
+      runAnalysis(siliguri, stnm, 'medical_emergency', 'baseline');
+    }
+  };
+
+  // Handle Reset Scenario to Real Data Baseline
+  const handleResetScenario = () => {
+    setSelectedScenario('baseline');
+    runAnalysis(origin || undefined, destination || undefined, missionType, 'baseline');
+  };
+
   // Active routes list (scenario routes if scenario active, otherwise baseline)
   const isScenarioActive = selectedScenario !== 'baseline';
   const activeRoutes = (isScenarioActive && analysis?.scenario_route_analysis)
@@ -210,6 +229,8 @@ export const App: React.FC = () => {
           onChangeScenario={handleScenarioChange}
           onAnalyze={() => runAnalysis()}
           onOpenReportModal={() => setIsReportModalOpen(true)}
+          onPreloadDemo={handlePreloadDemo}
+          onResetScenario={handleResetScenario}
         />
 
         {/* Center: Live GIS Map */}

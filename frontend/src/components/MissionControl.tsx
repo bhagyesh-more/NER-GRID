@@ -28,6 +28,8 @@ interface MissionControlProps {
   onChangeScenario: (s: ScenarioType) => void;
   onAnalyze: () => void;
   onOpenReportModal: () => void;
+  onPreloadDemo: () => void;
+  onResetScenario: () => void;
 }
 
 export const MissionControl: React.FC<MissionControlProps> = ({
@@ -44,6 +46,8 @@ export const MissionControl: React.FC<MissionControlProps> = ({
   onChangeScenario,
   onAnalyze,
   onOpenReportModal,
+  onPreloadDemo,
+  onResetScenario,
 }) => {
   return (
     <aside className="w-80 bg-[#0E1526] border-r border-gray-800 flex flex-col h-full overflow-y-auto shrink-0 select-none text-xs">
@@ -58,7 +62,26 @@ export const MissionControl: React.FC<MissionControlProps> = ({
         </span>
       </div>
 
-      <div className="p-3.5 space-y-4 flex-1">
+      <div className="p-3.5 space-y-3.5 flex-1">
+        {/* Quick Demo Preload Banner */}
+        <button
+          onClick={onPreloadDemo}
+          className="w-full p-2.5 rounded-lg border border-emerald-600/70 bg-emerald-950/40 hover:bg-emerald-950/60 text-emerald-200 flex items-center justify-between transition-all group"
+          title="Preload deterministic Medical Emergency workflow: Siliguri -> STNM Hospital Gangtok"
+        >
+          <div className="text-left">
+            <span className="block font-bold text-[11px] font-mono text-emerald-300 group-hover:text-emerald-200 flex items-center space-x-1.5">
+              <span>⚡ PRELOAD DEMO MISSION</span>
+            </span>
+            <span className="block text-[10px] text-gray-300">
+              Medical Emergency: Siliguri → STNM Gangtok
+            </span>
+          </div>
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/80 text-emerald-200 font-mono font-bold">
+            2-MIN FLOW
+          </span>
+        </button>
+
         {/* Origin & Destination Selectors */}
         <div className="space-y-2 bg-[#111827] p-3 rounded-lg border border-gray-800">
           <label className="text-gray-400 font-semibold tracking-wider uppercase text-[10px] flex items-center space-x-1.5">
@@ -172,35 +195,48 @@ export const MissionControl: React.FC<MissionControlProps> = ({
           <div className="flex items-center justify-between">
             <label className="text-gray-400 font-semibold tracking-wider uppercase text-[10px] flex items-center space-x-1.5">
               <Sliders className="w-3.5 h-3.5 text-amber-400" />
-              <span>What-If Scenario Simulation</span>
+              <span>What-If Simulation</span>
             </label>
-            {selectedScenario !== 'baseline' && (
-              <span className="text-[9px] px-1 rounded bg-amber-900/60 text-amber-300 font-mono">
-                ACTIVE
+            {selectedScenario !== 'baseline' ? (
+              <button
+                onClick={onResetScenario}
+                className="text-[9px] px-1.5 py-0.5 rounded bg-rose-950 border border-rose-700 text-rose-300 font-mono font-bold hover:bg-rose-900 transition-colors"
+                title="Reset to Real Data Baseline"
+              >
+                RESET SCENARIO
+              </button>
+            ) : (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-300 font-mono">
+                REAL BASELINE
               </span>
             )}
           </div>
           <div className="space-y-1.5">
             {[
-              { id: 'baseline', label: '1. Normal / Observed Conditions' },
-              { id: 'heavy_rainfall', label: '2. Monsoonal Surge (+65mm Rain)' },
-              { id: 'cloudburst', label: '3. Severe Cloudburst (+95mm Deluge)' },
-              { id: 'landslide_event', label: '4. Teesta Gorge Landslide (NH-10 Block)' },
-              { id: 'road_blockage', label: '5. Rangpo Border Chokepoint Blockage' },
+              { id: 'baseline', label: '1. Real Data Baseline (Observed)' },
+              { id: 'heavy_rainfall', label: '2. SIMULATED Heavy Rainfall (+65mm Rain)' },
+              { id: 'landslide_event', label: '3. SIMULATED Road Disruption (NH-10 Gorge Block)' },
+              { id: 'cloudburst', label: '4. SIMULATED Severe Cloudburst (+95mm Deluge)' },
+              { id: 'road_blockage', label: '5. SIMULATED Rangpo Chokepoint Blockage' },
             ].map((sc) => {
               const isSelected = selectedScenario === sc.id;
+              const isSim = sc.id !== 'baseline';
               return (
                 <button
                   key={sc.id}
                   onClick={() => onChangeScenario(sc.id as ScenarioType)}
                   className={`w-full text-left p-2 rounded text-[11px] border transition-all flex items-center justify-between ${
                     isSelected
-                      ? 'border-amber-500/80 bg-amber-950/40 text-amber-200 font-medium'
+                      ? isSim
+                        ? 'border-amber-500/80 bg-amber-950/40 text-amber-200 font-medium'
+                        : 'border-emerald-500/80 bg-emerald-950/40 text-emerald-200 font-medium'
                       : 'border-gray-800 bg-[#111827] text-gray-400 hover:border-gray-700'
                   }`}
                 >
-                  <span>{sc.label}</span>
-                  {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 ml-1" />}
+                  <span className="truncate">{sc.label}</span>
+                  {isSelected && (
+                    <span className={`w-2 h-2 rounded-full shrink-0 ml-1.5 ${isSim ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                  )}
                 </button>
               );
             })}

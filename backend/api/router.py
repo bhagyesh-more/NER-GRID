@@ -11,6 +11,7 @@ from backend.api.v1.scenario import router as scenario_router
 from backend.api.v1.incidents import router as incidents_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
+api_v1_router.include_router(health_router)
 api_v1_router.include_router(locations_router)
 api_v1_router.include_router(weather_router)
 api_v1_router.include_router(rainfall_router)

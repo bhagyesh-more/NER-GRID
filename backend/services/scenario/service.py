@@ -293,6 +293,11 @@ class ScenarioService:
         active_list = scenario_analyses if scenario_analyses else baseline_analyses
         recommended_route, rec_reason = self._determine_recommended_route(active_list, request.mission_type, is_simulation)
 
+        # Flag fastest, lowest risk, and recommended tags
+        self._flag_route_attributes(baseline_analyses, recommended_route.route_id if not is_simulation else baseline_analyses[0].route_id)
+        if scenario_analyses:
+            self._flag_route_attributes(scenario_analyses, recommended_route.route_id)
+
         return ScenarioAnalysisResponse(
             prediction_id=prediction_id,
             timestamp=datetime.utcnow(),
@@ -315,6 +320,20 @@ class ScenarioService:
             early_warnings=early_warnings,
         )
 
+    def _flag_route_attributes(self, analyses: List[RouteDisruptionAnalysis], recommended_id: str):
+        if not analyses:
+            return
+        min_duration = min(r.predicted_duration_minutes for r in analyses)
+        min_risk = min(r.disruption_probability for r in analyses)
+
+        for r in analyses:
+            r.is_fastest = (r.predicted_duration_minutes == min_duration)
+            r.is_lowest_risk = (r.disruption_probability == min_risk)
+            r.is_recommended = (r.route_id == recommended_id)
+            # Compute mission score (0 - 100)
+            score = 100.0 - (r.disruption_probability * 0.6 + (r.predicted_duration_minutes / 180.0) * 40.0)
+            r.mission_score = round(max(5.0, min(100.0, score)), 1)
+
     def _determine_recommended_route(
         self,
         analyses: List[RouteDisruptionAnalysis],
@@ -332,21 +351,31 @@ class ScenarioService:
         if r_primary.predicted_risk_score > 60.0 and r_alt.predicted_risk_score < r_primary.predicted_risk_score:
             time_diff = round(r_alt.predicted_duration_minutes - r_primary.predicted_duration_minutes, 1)
             reason = (
-                f"{r_alt.route_name} is STRONGLY RECOMMENDED because its predicted disruption risk "
-                f"({r_alt.predicted_risk_score}%) is substantially lower than the primary route "
-                f"({r_primary.predicted_risk_score}%), {'saving overall transit time' if time_diff <= 0 else f'despite an additional {time_diff} minutes of transit'}."
+                f"{r_alt.route_name} is STRONGLY RECOMMENDED for {mission_type.value}:\n"
+                f"• Lower predicted disruption risk ({r_alt.predicted_risk_score}% vs {r_primary.predicted_risk_score}%)\n"
+                f"• Lower mountain gorge hazard exposure\n"
+                f"• Mission suitability: {r_alt.mission_suitability.value}\n"
+                f"Trade-off: {r_alt.route_name} is slower (+{time_diff} mins) than fastest baseline but provides substantially higher expected mission reliability."
             )
             return r_alt, reason
 
         # For Medical Emergency: if primary risk > 35, prefer safer route if alt is <= 25
         if mission_type == MissionType.MEDICAL_EMERGENCY and r_primary.predicted_risk_score > 35.0 and r_alt.predicted_risk_score <= 30.0:
-            return r_alt, f"{r_alt.route_name} recommended for {mission_type.value}: prioritizes zero-blockage transit certainty."
+            time_diff = round(r_alt.predicted_duration_minutes - r_primary.predicted_duration_minutes, 1)
+            reason = (
+                f"{r_alt.route_name} is RECOMMENDED for {mission_type.value}:\n"
+                f"• Zero-blockage transit priority\n"
+                f"• Lower risk index ({r_alt.predicted_risk_score}% vs {r_primary.predicted_risk_score}%)\n"
+                f"Trade-off: Accepts +{time_diff} minutes travel time to avoid entrapment risk."
+            )
+            return r_alt, reason
 
         # Default to Primary if conditions are manageable
         reason = (
-            f"{r_primary.route_name} is RECOMMENDED as the optimal operational choice: "
-            f"fastest transit ({r_primary.predicted_duration_minutes} mins) with acceptable disruption risk "
-            f"({r_primary.predicted_risk_score}% - {r_primary.predicted_risk_level.value})."
+            f"{r_primary.route_name} is RECOMMENDED as the optimal operational choice:\n"
+            f"• Fastest transit ({r_primary.predicted_duration_minutes} mins)\n"
+            f"• Acceptable disruption risk ({r_primary.predicted_risk_score}% - {r_primary.predicted_risk_level.value})\n"
+            f"• Direct highway classification with standard emergency clearance."
         )
         return r_primary, reason
 
