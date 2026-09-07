@@ -8,6 +8,7 @@ from backend.api.v1.routes import router as routes_router
 from backend.api.v1.data_sources import router as data_sources_router
 from backend.api.v1.ingestion import router as ingestion_router
 from backend.api.v1.scenario import router as scenario_router
+from backend.api.v1.incidents import router as incidents_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(locations_router)
@@ -17,6 +18,7 @@ api_v1_router.include_router(routes_router)
 api_v1_router.include_router(data_sources_router)
 api_v1_router.include_router(ingestion_router)
 api_v1_router.include_router(scenario_router)
+api_v1_router.include_router(incidents_router)
 
 root_router = APIRouter()
 root_router.include_router(health_router)

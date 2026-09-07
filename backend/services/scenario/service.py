@@ -22,7 +22,7 @@ from backend.schemas.scenario import (
     MissionSuitability,
     MissionType,
 )
-from backend.database.models import WeatherObservationModel, RainfallObservationModel
+from backend.database.models import WeatherObservationModel, RainfallObservationModel, IncidentReportModel
 from backend.services.routing.service import routing_service
 from backend.services.weather.service import weather_service
 from backend.services.gis.service import gis_service
@@ -115,6 +115,9 @@ class ScenarioService:
             "rainfall_mm": avg_precip_24h,
         }
 
+        # 2.5 Query Active Reported Field Incidents from Database
+        recent_incidents = db.query(IncidentReportModel).order_by(IncidentReportModel.reported_at.desc()).limit(20).all()
+
         # 3. Evaluate Baseline Disruption Risk for Each Route
         baseline_analyses: List[RouteDisruptionAnalysis] = []
         for c_route in candidate_routes_data:
@@ -124,9 +127,23 @@ class ScenarioService:
                 weather_data=weather_summary,
                 rainfall_data={"rainfall_mm": avg_precip_24h},
             )
+
+            is_primary = "primary" in c_route["id"]
+            # Check if any reported incident matches this route
+            reported_event_penalty = 0.0
+            reported_event_desc = ""
+            if is_primary and recent_incidents:
+                for inc in recent_incidents:
+                    loc_lower = inc.location_name.lower()
+                    if loc_lower in c_route["name"].lower() or loc_lower in origin_name.lower() or loc_lower in dest_name.lower():
+                        reported_event_penalty = 50.0 if inc.report_type in ["Road Blocked", "Landslide"] else 25.0
+                        reported_event_desc = f"Active field report: {inc.report_type} at {inc.location_name} ({inc.description or 'unverified'})"
+                        break
+
             disrupt_res = self.model.calculate_disruption(
                 features=features,
-                simulated_event_penalty=0.0,
+                simulated_event_penalty=reported_event_penalty,
+                simulated_event_description=reported_event_desc,
                 mission_type=request.mission_type,
             )
 

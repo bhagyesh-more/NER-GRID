@@ -198,3 +198,18 @@ class IngestionRunModel(Base):
     error_log = Column(Text, nullable=True)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
+
+
+class IncidentReportModel(Base):
+    """Field reports submitted by operators, local authorities, or crowd observers."""
+    __tablename__ = "incident_reports"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    location_name = Column(String(150), nullable=False, index=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    report_type = Column(String(50), nullable=False, index=True)  # Road Blocked, Flooding, Landslide, Severe Traffic, etc.
+    description = Column(Text, nullable=True)
+    provenance_status = Column(String(20), default=DataOrigin.REPORTED.value, nullable=False)
+    is_verified = Column(Boolean, default=False)
+    reported_at = Column(DateTime, default=datetime.utcnow, index=True)
