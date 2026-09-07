@@ -1,0 +1,121 @@
+{
+  "source": "NRSC Landslide Atlas of India (ISRO, 2023) & IMD Climatological Normals",
+  "provenance": "REPORTED",
+  "published_year": 2023,
+  "district_hazard_matrix": {
+    "East Sikkim": {
+      "state": "Sikkim",
+      "landslide_susceptibility": "VERY_HIGH",
+      "nrsc_risk_score": 92.5,
+      "all_india_rank": 1,
+      "trigger_24h_rainfall_mm": 45.0,
+      "trigger_72h_rainfall_mm": 90.0,
+      "soil_saturation_threshold_mm": 120.0,
+      "key_corridors": ["NH-10 (Sevoke-Rangpo-Gangtok)"]
+    },
+    "Pakyong": {
+      "state": "Sikkim",
+      "landslide_susceptibility": "VERY_HIGH",
+      "nrsc_risk_score": 89.0,
+      "all_india_rank": 4,
+      "trigger_24h_rainfall_mm": 45.0,
+      "trigger_72h_rainfall_mm": 90.0,
+      "soil_saturation_threshold_mm": 120.0,
+      "key_corridors": ["NH-10 (Rangpo-Singtam)"]
+    },
+    "Darjeeling": {
+      "state": "West Bengal",
+      "landslide_susceptibility": "VERY_HIGH",
+      "nrsc_risk_score": 88.0,
+      "all_india_rank": 5,
+      "trigger_24h_rainfall_mm": 50.0,
+      "trigger_72h_rainfall_mm": 95.0,
+      "soil_saturation_threshold_mm": 130.0,
+      "key_corridors": ["NH-10", "Hill Cart Road"]
+    },
+    "Dima Hasao": {
+      "state": "Assam",
+      "landslide_susceptibility": "HIGH",
+      "nrsc_risk_score": 78.4,
+      "all_india_rank": 17,
+      "trigger_24h_rainfall_mm": 55.0,
+      "trigger_72h_rainfall_mm": 110.0,
+      "soil_saturation_threshold_mm": 150.0,
+      "key_corridors": ["Lumding-Haflong-Silchar corridor", "NH-27"]
+    },
+    "Kohima": {
+      "state": "Nagaland",
+      "landslide_susceptibility": "VERY_HIGH",
+      "nrsc_risk_score": 82.0,
+      "all_india_rank": 14,
+      "trigger_24h_rainfall_mm": 50.0,
+      "trigger_72h_rainfall_mm": 100.0,
+      "soil_saturation_threshold_mm": 140.0,
+      "key_corridors": ["NH-29 (Dimapur-Kohima)"]
+    },
+    "East Khasi Hills": {
+      "state": "Meghalaya",
+      "landslide_susceptibility": "HIGH",
+      "nrsc_risk_score": 74.0,
+      "all_india_rank": 28,
+      "trigger_24h_rainfall_mm": 65.0,
+      "trigger_72h_rainfall_mm": 130.0,
+      "soil_saturation_threshold_mm": 180.0,
+      "key_corridors": ["NH-06 (Guwahati-Shillong-Silchar)", "Sohra road"]
+    },
+    "Aizawl": {
+      "state": "Mizoram",
+      "landslide_susceptibility": "HIGH",
+      "nrsc_risk_score": 76.5,
+      "all_india_rank": 21,
+      "trigger_24h_rainfall_mm": 50.0,
+      "trigger_72h_rainfall_mm": 105.0,
+      "soil_saturation_threshold_mm": 140.0,
+      "key_corridors": ["NH-54 (Silchar-Aizawl)"]
+    },
+    "Cachar": {
+      "state": "Assam",
+      "landslide_susceptibility": "MEDIUM_HIGH_FLOOD",
+      "nrsc_risk_score": 62.0,
+      "all_india_rank": 45,
+      "trigger_24h_rainfall_mm": 60.0,
+      "trigger_72h_rainfall_mm": 120.0,
+      "soil_saturation_threshold_mm": 160.0,
+      "key_corridors": ["Barak Valley lifelines", "NH-06 terminus"]
+    },
+    "Kamrup Metropolitan": {
+      "state": "Assam",
+      "landslide_susceptibility": "MODERATE_URBAN_FLOOD",
+      "nrsc_risk_score": 45.0,
+      "all_india_rank": 82,
+      "trigger_24h_rainfall_mm": 70.0,
+      "trigger_72h_rainfall_mm": 140.0,
+      "soil_saturation_threshold_mm": 200.0,
+      "key_corridors": ["NH-27", "Guwahati Gateway"]
+    },
+    "Papum Pare": {
+      "state": "Arunachal Pradesh",
+      "landslide_susceptibility": "HIGH",
+      "nrsc_risk_score": 75.0,
+      "all_india_rank": 25,
+      "trigger_24h_rainfall_mm": 55.0,
+      "trigger_72h_rainfall_mm": 115.0,
+      "soil_saturation_threshold_mm": 150.0,
+      "key_corridors": ["NH-415 (Bandardewa-Itanagar-Hollongi)"]
+    }
+  },
+  "historical_monthly_rainfall_normals_mm": {
+    "Sub-Himalayan West Bengal & Sikkim": {
+      "Jan": 15.2, "Feb": 26.8, "Mar": 58.4, "Apr": 142.1, "May": 312.5,
+      "Jun": 598.2, "Jul": 724.6, "Aug": 560.1, "Sep": 412.3, "Oct": 156.4, "Nov": 21.0, "Dec": 9.5
+    },
+    "Assam & Meghalaya": {
+      "Jan": 12.4, "Feb": 28.5, "Mar": 74.2, "Apr": 182.6, "May": 345.8,
+      "Jun": 562.4, "Jul": 580.9, "Aug": 465.3, "Sep": 354.2, "Oct": 142.1, "Nov": 18.5, "Dec": 8.4
+    },
+    "Nagaland, Manipur, Mizoram & Tripura": {
+      "Jan": 10.8, "Feb": 25.1, "Mar": 62.4, "Apr": 148.5, "May": 280.4,
+      "Jun": 435.6, "Jul": 398.2, "Aug": 382.4, "Sep": 298.5, "Oct": 172.4, "Nov": 32.1, "Dec": 7.8
+    }
+  }
+}
